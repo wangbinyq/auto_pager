@@ -3,11 +3,11 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  auto pager
-// @author       You
-// @match        http://tampermonkey.net/scripts.php
+// @author       wangbin
+// @include      http*
 // @grant        none
 // ==/UserScript==
 
 (function() {
-    console.log('test UserScript');
+    import { grabContents, grabNext} from 'src/grablink'
 })();
