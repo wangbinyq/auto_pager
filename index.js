@@ -8,6 +8,5 @@
 // @grant        none
 // ==/UserScript==
 
-(function() {
-    import { grabContents, grabNext} from 'src/grablink'
-})();
+import { init } from './src/grablink'
+init()
