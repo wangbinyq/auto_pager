@@ -157,7 +157,8 @@
 	                return {
 	                    style: style,
 	                    contents: [],
-	                    next: 'Hala'
+	                    next: 'Hala',
+	                    selectMode: false
 	                };
 	            }
 	        });

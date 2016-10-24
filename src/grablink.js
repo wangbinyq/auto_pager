@@ -35,7 +35,8 @@ export function init() {
                 return  {
                     style,
                     contents: [],
-                    next: 'Hala'
+                    next: 'Hala',
+                    selectMode: false
                 }
             }
         })
