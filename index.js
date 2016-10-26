@@ -17,8 +17,6 @@
     modify from http://www.timvasil.com/blog14/post/2014/02/24/Build-a-unique-selector-for-any-DOM-element-using-jQuery.aspx 
     */
 
-    var ap_nonselector = '#ap-nonselector'
-
     function getElementUniqueSelector(el) {
         var tagName = el.tagName
         if(!tagName) {
@@ -60,17 +58,32 @@
 
         var parentSelector = getElementUniqueSelector(parent)
         if(parentSelector && needParent) {
-            return parentSelector + ' > ' + selector
+            return (parentSelector + ' > ' + selector).trim()
         } else {
-            return parentSelector + ' ' + selector
+            return (parentSelector + ' ' + selector).trim()
         }
     }
     window.getElementUniqueSelector = getElementUniqueSelector
+
+    function $get(href, onsuccess, onfail) {
+        var xhr = new XMLHttpRequest()
+        xhr.open('GET', href, true)
+        xhr.onreadystatechange  = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if(xhr.status >= 200 && xhr.status < 400) {
+                    onsuccess(xhr)
+                } else {
+                    onfail(xhr)
+                }
+            }
+        }
+    }
 
     /*--------- autopager ---------*/
 
     var injectStyle = `
             #_autopager {
+                background: white;
                 position: fixed;
                 right: 5px;
                 bottom: 5px;
@@ -238,7 +251,7 @@
     var template = `
             <i id="close"></i>
             <span>选择内容</span>
-            <div class="flex content">
+            <div class="flex ap-content">
                 <input type="text"/>
                 <span class="flex-grow"></span>                
                 <span class="select"></span>
@@ -247,7 +260,7 @@
             <div class="line"></div>
 
             <span>选择下一页</span>
-            <div class="flex next">
+            <div class="flex ap-next">
                 <input type="text"/>
                 <span class="flex-grow"></span>                
                 <span class="select"></span>
@@ -279,9 +292,12 @@
     
         this.model = {
             select: 'next',
-            next: '#next',
-            content: '#content'
+            'next': '#next',
+            'content': '#content',
+            auto: false
         }
+
+        this.loadModel()
 
         this.events = {
             '.select click': 'changeSelect',
@@ -301,8 +317,8 @@
         document.body.appendChild(el)
 
         this.el = el
-        this.next = this.el.querySelector('.next input')
-        this.content = this.el.querySelector('.content input')
+        this.next = this.el.querySelector('.ap-next input')
+        this.content = this.el.querySelector('.ap-content input')
         this.error = this.el.querySelector('.error')
 
         this.render()
@@ -310,8 +326,8 @@
     }
 
     fn.render = function() {
-        this.el.querySelector('.next input').value = this.model.next
-        this.el.querySelector('.content input').value = this.model.content
+        this.el.querySelector('.ap-next input').value = this.model.next
+        this.el.querySelector('.ap-content input').value = this.model.content
         this.changeContent()    
     }
 
@@ -323,8 +339,8 @@
             this.changeContent()
             this.el.style.display = 'block'
         } else {
-            this.addClassName(ap_nonselector, nextClassName)
-            this.addClassName(ap_nonselector, contentClassName)
+            this.addClassName('', nextClassName)
+            this.addClassName('', contentClassName)
             this.el.style.display = 'none'
         }
     }
@@ -351,11 +367,16 @@
         document.body.addEventListener('mouseover', function(e) {
             if(self.model.select) {
                 var target = e.target
-                self.model[self.model.select] = getElementUniqueSelector(target) || ap_nonselector
+                self.model[self.model.select] = getElementUniqueSelector(target)
                 self.render()
                 e.stopPropagation()
                 e.preventDefault()
             }
+        })
+
+        this.el.addEventListener('mouseover', function(e) {
+            e.stopPropagation()
+            e.preventDefault()           
         })
 
         document.body.addEventListener('click', function(e) {
@@ -366,10 +387,23 @@
             }
         })
 
-        this.el.addEventListener('mouseover', function(e) {
-            e.stopPropagation()
-            e.preventDefault()           
-        })
+        // document.body.addEventListener('scroll', function(e) {
+
+        //     if(!this.model.auto || !this.model.next) {
+        //         return
+        //     }
+
+        //     var next = document.querySelector(this.model.next) 
+            
+        //     if(false) {
+        //         if(e.target === next) {
+        //             var href = next.href
+        //             $get(href, self.getNextPage.bind(self), function(xhr) {
+        //                 console.error('autopager get', href, xhr.status)
+        //             })
+        //         }
+        //     }
+        // })
     }
 
     fn.changeSelect = function(e) {
@@ -377,24 +411,29 @@
         var target = e.target
         var parent = target.parentNode
         var name = parent.classList.item(1)
-        
         this.model.select = name
+        if(name) {
+            name = name.split('-')
+            this.model.select = name[1]
+        }
 
         e.stopPropagation()
         e.preventDefault()
     }
 
     fn.changeContent = function() {
-        this.model.next = this.next.value
-        this.model.content = this.content.value
+        this.model.next = this.next.value.trim()
+        this.model.content = this.content.value.trim()
         this.addClassName(this.model.next, nextClassName)
         this.addClassName(this.model.content, contentClassName)
 
-        var next = document.querySelector(this.model.next)
-        if(next && next.href && next.href.indexOf('javascript:') !== 0) {
-            this.error.style.display = 'none'
-        } else {
-            this.error.style.display = 'block'
+        if(this.model.next) {
+            var next = document.querySelector(this.model.next)
+            if(next && next.href && next.href.indexOf('javascript:') !== 0) {
+                this.error.style.display = 'none'
+            } else {
+                this.error.style.display = 'block'
+            }
         }
     }
 
@@ -402,13 +441,28 @@
         document.querySelectorAll('.'+className).forEach(function(el) {
             el.classList.remove(className)
         })
-        document.querySelectorAll(query).forEach(function(el) {
-            el.classList.add(className)
-        })
+        if(query) {
+            document.querySelectorAll(query).forEach(function(el) {
+                el.classList.add(className)
+            })
+        }
     }
 
     fn.goAutoPage = function() {
+        this.model.auto = true
+        this.saveModel()
+    }
+    
+    fn.saveModel = function() {
+        for(var key in this.model) {
+            localStorage.setItem(key, this.model[key])
+        }
+    }
 
+    fn.loadModel = function() {
+        for(var key in this.model) {
+            this.model[key] = localStorage.getItem(key)
+        }
     }
 
     var autopager = new AutoPager()
