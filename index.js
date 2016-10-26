@@ -12,61 +12,66 @@
 (function() {
     'use strict'
 
-    function defined(o) {
-        return o !== undefined && o !== null
-    }
+    /*--------- getElementUniqueSelector ----------*/
+    /*
+    modify from http://www.timvasil.com/blog14/post/2014/02/24/Build-a-unique-selector-for-any-DOM-element-using-jQuery.aspx 
+    */
 
-    function watch(obj, prop, callback) {
-        if(!callback) {
-            callback = prop
-            prop = obj
-            obj = this
+    var ap_nonselector = '#ap-nonselector'
+
+    function getElementUniqueSelector(el) {
+        var tagName = el.tagName
+        if(!tagName) {
+            return ''
+        }
+        var id = el.id
+        if(id) {
+            return '#' + id
         }
 
-        var value = obj[prop]
-        var callbacks = obj.$$callbacks = obj.$$callbacks || {}
-        var propCallbacks = callbacks[prop] = callbacks[prop] || []
+        var classSelector = Array.prototype.filter.call(el.classList, function(className) {
+            return className !== nextClassName && className !== contentClassName
+        }).map(function(className) {
+            return '.' + className
+        }).join('')
 
-        var desc = Object.getOwnPropertyDescriptor(obj, prop)
-        if(!(desc && (desc.get || desc.set))) {
-            Object.defineProperty(obj, prop, {
-                get: function(){
-                    return value
-                },
-                set: function(newValue){
-                    if(newValue !== value) {
-                        value = newValue
-                        
-                        propCallbacks.forEach(function(cb) {
-                            cb()
-                        })                    
-                    }
+        var selector
+        var parent = el.parentNode
+        var siblings = parent.children
+        var needParent = false
+        if(classSelector && parent.querySelectorAll(classSelector).length === 1) {
+            selector = classSelector
+        } else if (parent.querySelectorAll(tagName).length === 1) {
+            selector = tagName
+        } else {
+            var nth = Array.prototype.indexOf.call(siblings, el) + 1
+            selector = ':nth-child(' + nth + ')'
+            needParent = true
+        }
+
+        if(!needParent) {
+            for(var ancestor = parent.parentNode; ancestor && ancestor.querySelectorAll(selector).length === 1;
+                parent = ancestor, ancestor = ancestor.parentNode) {
+                if(ancestor === null) {
+                    return selector
                 }
-            })
-        }
-
-
-        if(propCallbacks.indexOf(callback) === -1) {
-            propCallbacks.push(callback)
-        }
-
-        return function() {
-            var index = propCallbacks.indexOf(callback)
-            propCallbacks.splice(index, 1)
-            if(propCallbacks.length === 0) {
-                delete callbacks[prop]
             }
         }
+
+        var parentSelector = getElementUniqueSelector(parent)
+        if(parentSelector && needParent) {
+            return parentSelector + ' > ' + selector
+        } else {
+            return parentSelector + ' ' + selector
+        }
     }
-    
-    // for test
-    window.watch = watch
+    window.getElementUniqueSelector = getElementUniqueSelector
 
     /*--------- autopager ---------*/
 
     var injectStyle = `
             #_autopager {
-                position: absolute;
+                position: fixed;
                 right: 5px;
                 bottom: 5px;
                 box-shadow: 0 0 5px #aaaaaa;
@@ -212,17 +217,28 @@
             #_autopager .select:active::after {
                 background: hsl(0, 0%, 0%);
             }
+
+            #_autopager .error {
+                display: none;
+                font-size: 0.7em;
+                color: hsl(0, 100%, 60%);
+            }            
+
+            .autopager-next {
+                box-sizing: border-box;
+                border: 2px solid hsl(0, 50%, 50%);
+            }
+
+            .autopager-content {
+                box-sizing: border-box;
+                border: 2px solid hsl(120, 50%, 50%);
+            }
         `
     
     var template = `
             <i id="close"></i>
-            <div class="flex">
-                <span>选择内容</span>
-                <span class="flex-grow"></span>
-                <button class="btn">添加</button>
-            </div>
-            
-            <div class="flex">
+            <span>选择内容</span>
+            <div class="flex content">
                 <input type="text"/>
                 <span class="flex-grow"></span>                
                 <span class="select"></span>
@@ -231,13 +247,28 @@
             <div class="line"></div>
 
             <span>选择下一页</span>
-            <div class="flex">
+            <div class="flex next">
                 <input type="text"/>
                 <span class="flex-grow"></span>                
                 <span class="select"></span>
             </div>
+            <div class="error">下一页不是链接</div>
+
+            <div style="width:1px; height:10px"></div>
+
+            <div class="flex" style="margin-bottom:-5px">
+                <span class="flex-grow"></span>                
+                <span class="flex-grow"></span>                
+                <span class="flex-grow"></span>                
+                <span class="flex-grow"></span>                
+                <button class="cancel btn">取消</button>
+                <span class="flex-grow"></span>                
+                <button class="ok btn">确定</button>
+            </div>
         `
-    
+    var nextClassName = 'autopager-next'
+    var contentClassName = 'autopager-content'
+
     function AutoPager() {
         this.init()
     }
@@ -246,16 +277,138 @@
 
     fn.init = function() {
     
+        this.model = {
+            select: 'next',
+            next: '#next',
+            content: '#content'
+        }
+
+        this.events = {
+            '.select click': 'changeSelect',
+            '#close click': 'disable',
+            '.cancel click': 'disable',
+            'input[type="text"] change': 'changeContent',
+            '.ok click': 'goAutoPage'
+        }
+
         var style = document.createElement('style')
         style.innerHTML = injectStyle
         document.head.appendChild(style)
 
         var el = document.createElement('div')
         el.id = '_autopager'
-        el.dataset.show = 'selectMode'
         el.innerHTML = template
-        
         document.body.appendChild(el)
+
+        this.el = el
+        this.next = this.el.querySelector('.next input')
+        this.content = this.el.querySelector('.content input')
+        this.error = this.el.querySelector('.error')
+
+        this.render()
+        this.bindEvents()
+    }
+
+    fn.render = function() {
+        this.el.querySelector('.next input').value = this.model.next
+        this.el.querySelector('.content input').value = this.model.content
+        this.changeContent()    
+    }
+
+    fn.enable = function(enable) {
+        if(enable === undefined) {
+            return this.el.style.display !== 'none'
+        }
+        if(enable) {
+            this.changeContent()
+            this.el.style.display = 'block'
+        } else {
+            this.addClassName(ap_nonselector, nextClassName)
+            this.addClassName(ap_nonselector, contentClassName)
+            this.el.style.display = 'none'
+        }
+    }
+
+    fn.disable = function() {
+        this.enable(false)
+    }
+
+    fn.bindEvents = function() {
+        var self = this
+
+        for(var event in this.events) {
+            var eventName = this.events[event]
+            var eventInfo = event.split(' ')
+            var query = eventInfo[0]
+            var event = eventInfo[1]
+            var self = this
+
+            this.el.querySelectorAll(query).forEach(function(el) {
+                el.addEventListener(event, self[eventName].bind(self))
+            })
+        }
+
+        document.body.addEventListener('mouseover', function(e) {
+            if(self.model.select) {
+                var target = e.target
+                self.model[self.model.select] = getElementUniqueSelector(target) || ap_nonselector
+                self.render()
+                e.stopPropagation()
+                e.preventDefault()
+            }
+        })
+
+        document.body.addEventListener('click', function(e) {
+            if(self.model.select) {
+                self.model.select = ''
+                e.stopPropagation()
+                e.preventDefault()
+            }
+        })
+
+        this.el.addEventListener('mouseover', function(e) {
+            e.stopPropagation()
+            e.preventDefault()           
+        })
+    }
+
+    fn.changeSelect = function(e) {
+
+        var target = e.target
+        var parent = target.parentNode
+        var name = parent.classList.item(1)
+        
+        this.model.select = name
+
+        e.stopPropagation()
+        e.preventDefault()
+    }
+
+    fn.changeContent = function() {
+        this.model.next = this.next.value
+        this.model.content = this.content.value
+        this.addClassName(this.model.next, nextClassName)
+        this.addClassName(this.model.content, contentClassName)
+
+        var next = document.querySelector(this.model.next)
+        if(next && next.href && next.href.indexOf('javascript:') !== 0) {
+            this.error.style.display = 'none'
+        } else {
+            this.error.style.display = 'block'
+        }
+    }
+
+    fn.addClassName = function(query, className) {
+        document.querySelectorAll('.'+className).forEach(function(el) {
+            el.classList.remove(className)
+        })
+        document.querySelectorAll(query).forEach(function(el) {
+            el.classList.add(className)
+        })
+    }
+
+    fn.goAutoPage = function() {
+
     }
 
     var autopager = new AutoPager()
