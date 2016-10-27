@@ -240,11 +240,13 @@
             .autopager-next {
                 box-sizing: border-box;
                 border: 2px solid hsl(0, 50%, 50%);
+                cursor: crosshair;
             }
 
             .autopager-content {
                 box-sizing: border-box;
                 border: 2px solid hsl(120, 50%, 50%);
+                cursor: crosshair;
             }
         `
     
