@@ -81,7 +81,6 @@ module.exports = function(config) {
                     loader: 'babel',
                     query: {
                         presets: ['es2015'],
-                        plugins: ["transform-vue-jsx"]
                     }
                 }, {
                     test: /\.css/,

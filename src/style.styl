@@ -1,0 +1,146 @@
+#autopager {
+    background: white;
+    position: fixed;
+    right: 5px;
+    bottom: 5px;
+    box-shadow: 0 0 5px #aaaaaa;
+    padding: 20px;
+    width: 200px;
+    font-size: 14px;
+    font-family: "Roboto", "Noto Sans CJK SC", "Nato Sans CJK TC", "Nato Sans CJK JP", "Nato Sans CJK KR", -apple-system, ".SFNSText-Regular", "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Zen Hei", Arial, sans-serif;
+    input[type="text"] {
+        width: 70%;
+        padding: 5px 9px;
+        border: 1px solid hsl(0, 0%, 70%);
+        margin: 0px;
+        text-align: left;
+        outline: none;
+    }
+    input[type="text"]:hover {
+        border: 1px solid hsl(0, 0%, 50%);
+    }
+    input[type="text"]:focus {
+        border: 1px solid hsl(200, 40%, 60%);
+    }
+
+    .content,
+    .next {
+        background: white;
+    }
+
+    .flex {
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+    }
+    .flex-grow {
+        flex-grow: 999;
+    }
+    .line {
+        width: 100%;
+        height: 1px;
+        background: hsl(0, 0%, 80%);
+        margin: 20px 0;
+    }
+    .close {
+        display: none;
+    }
+    &:hover .close {
+        display: block;
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        width: 12px;
+        height: 12px;
+        &:hover {
+            height: 14px;
+        }
+    }
+    &:hover .close::before,
+    &:hover .close::after {
+        content: "";
+        display: block;
+        width: 2px;
+        height: 100%;
+        background: hsl(0, 0%, 20%);
+        position: absolute;
+        left: 6px;
+    }
+    &:hover .close::before {
+        transform: rotate(45deg);
+    }
+    &:hover .close::after {
+        transform: rotate(-45deg);
+    }
+    &:hover .close:active::before,
+    &:hover .close:active::after {
+        background: hsl(0, 0%, 0%);
+    }
+    .btn {
+        font-size: 14px;
+        border-radius: 2px;
+        border: 0;
+        text-align: center;
+        background-color: hsl(200, 60%, 50%);
+        transition: all .2s ease-in-out;
+        color: white;
+        padding: 4px 8px;
+        &:hover {
+            background-color: hsl(200, 70%, 45%);
+        }
+        &:active {
+            background-color: hsl(200, 80%, 40%);
+        }
+    }
+    .select {
+        position: relative;
+        left: -5px;
+        width: 10px;
+        height: 10px;
+        border: 1px solid hsl(0, 0%, 30%);
+        border-radius: 5px;
+        &:hover {
+            border-color: hsl(0, 0%, 20%);
+            &::before,
+            &::after {
+                background: hsl(0, 0%, 20%);
+            }
+        }
+        &:active {
+            border-color: hsl(0, 0%, 0%);
+            &::before,
+            &::after {
+                background: hsl(0, 0%, 00%);
+            }
+        }
+        &::before,
+        &::after {
+            content: "";
+            display: inline-block;
+            width: 2px;
+            height: 20px;
+            background: hsl(0, 0%, 30%);
+            position: absolute;
+            left: 4px;
+            top: -5px;
+        }
+        &::after {
+            transform: rotate(90deg);
+        }
+    }
+    .error {
+        display: none;
+        font-size: 0.7em;
+        color: hsl(0, 100%, 60%);
+    }
+    .ap-next {
+        box-sizing: border-box;
+        border: 2px solid hsl(0, 50%, 50%);
+        cursor: crosshair;
+    }
+    .ap-content {
+        box-sizing: border-box;
+        border: 2px solid hsl(120, 50%, 50%);
+        cursor: crosshair;
+    }
+}

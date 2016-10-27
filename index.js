@@ -8,5 +8,10 @@
 // @grant        none
 // ==/UserScript==
 
-import { init } from './src/grablink'
-init()
+import App from './src/app'
+
+const app = new App()
+
+window.$$debug = () => {
+    app.debug()
+}

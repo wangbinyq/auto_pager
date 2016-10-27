@@ -13,8 +13,11 @@ module.exports = {
                 presets: ['es2015'],
             }
         }, {
-            test: /\.css/,
-            loader: 'style!css?modules&localIdentName=[local]-[hash:base64:5]&-url'
+            test: /\.styl/,
+            loader: 'style!css?modules&localIdentName=[local]-[hash:base64:5]&-url!stylus'
+        }, {
+            test: /\.ejs/,
+            loader: 'ejs2'
         }]
     },
     devtool: 'source-map'
