@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "karma start",
+    "e2e": "protractor protractor.config.js",
     "dev": "webpack-dev-server --open --inline --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
@@ -20,6 +21,7 @@
   "homepage": "https://github.com/445141126/auto_pager#readme",
   "dependencies": {
     "ejs": "^2.5.2",
+    "eventemitter": "^0.3.3",
     "jquery": "^3.1.1"
   },
   "devDependencies": {
@@ -42,6 +44,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^1.8.0",
     "node-sass": "^3.10.1",
+    "protractor": "^4.0.10",
     "sinon": "^1.17.5",
     "style-loader": "^0.13.1",
     "stylus": "^0.54.5",

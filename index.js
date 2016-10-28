@@ -8,7 +8,7 @@
 // @grant        none
 // ==/UserScript==
 
-import App from './src/app'
+import App from './src/view'
 
 const app = new App()
 
