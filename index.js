@@ -12,6 +12,4 @@ import App from './src/app'
 
 const app = new App()
 
-window.$$debug = () => {
-    app.debug()
-}
+window.$$autopager = app
