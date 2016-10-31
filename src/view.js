@@ -12,6 +12,7 @@ function stopEvent(e) {
 export default class View{
     constructor() {
         this.select = ''
+        this.selectMode = false
         this.render()
 
         this.model = new Model({
@@ -31,8 +32,12 @@ export default class View{
         this.model.load()
 
 
-        this.bindEvents()
         this.update()
+
+        if(this.model.get('auto')) {
+            this.goAutoPage()
+        }
+        this.bindEvents()
     }
 
     render() {
@@ -47,13 +52,20 @@ export default class View{
         this.$next = this.$('.' + style.next + ' input[type="text"]')
     }
 
-    update(show = true) {
+    update() {
+        const show = this.selectMode
         $('.' + style['ap-content']).removeClass(style['ap-content'])
         $('.' + style['ap-next']).removeClass(style['ap-next'])
 
         if(show) {
             $(this.model.get('content')).addClass(style['ap-content'])
             $(this.model.get('next')).addClass(style['ap-next'])
+        }
+
+        if(show) {
+            this.$el.show()
+        } else {
+            this.$el.hide()
         }
     }
 
@@ -78,12 +90,18 @@ export default class View{
 
         const $body = $('body')
         $body.click((e) => {
-            this.select = ''
-            stopEvent(e)
+            if(this.selectMode) {
+                this.select = ''
+                stopEvent(e)
+            }
+            if(e.ctrlKey && e.altKey) {
+                this.selectMode = true
+                this.update()
+            }
         })
         this.$el.click(stopEvent)
         $body.mouseover(debounce((e) => {
-            if(this.select) {
+            if(this.select && this.selectMode) {
                 const target = e.target
                 this.model.set(this.select, getElementUniqueSelector(target, style['ap-next'], style['ap-content']))
                 stopEvent(e)
@@ -91,17 +109,17 @@ export default class View{
         }))
         this.$el.mouseover(debounce(stopEvent))
         $(window).scroll(debounce((e) => {
-            if(this.href && this.$ap_content && this.$ap_next && this.model.get('auto')) {
+            if(this.href && this.$ap_content && this.$ap_next && this.model.get('auto') && !this.selectMode) {
                 if(this.$ap_next.visible() && !this.loading) {
                     this.loading = true
                     $.get(this.href).then((res) => {
                         console.log(this.model.get('content'), this.model.get('next'))
-                        const $res = $(res)
-                        const $content = $res.filter(this.model.get('content'))
-                        const $next = $res.filter(this.model.get('next'))
-                        console.log(this.href)
+                        const $res = $('<html>').html(res)
+                        const $content = $res.find(this.model.get('content'))
+                        const $next = $res.find(this.model.get('next'))
+                        console.log('get', this.href)
                         this.href = $next.getHref()
-                        console.log(this.href)
+                        console.log('next', this.href)
                         this.$ap_content.after($content)
                         this.$ap_content = $content
                         this.loading = false
@@ -113,10 +131,10 @@ export default class View{
     }
 
     close() {
-        this.$el.hide()
+        this.selectMode = false
         this.select = ''
         this.model.save()
-        this.update(false)
+        this.update()
     }
 
     goAutoPage() {

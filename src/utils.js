@@ -132,7 +132,7 @@ export function debounce(fn, timeout = 41) {
 
     $.fn.getHref = function() {
         const href = $(this).attr('href')
-        if(href.indexOf('javascript:') === 0) {
+        if(href && href.indexOf && href.indexOf('javascript:') === 0) {
             return ''
         }
         return href
