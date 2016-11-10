@@ -1,0 +1,25 @@
+{
+  "name": "autopager",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "preload next page",
+  "icons": { "128": "icon_128.png" },
+  "background": {
+    "persistent": false,
+    "scripts": ["events.js"]
+  },
+  "permissions": ["http://*/*", "https://*/*", "storage", "tabs"],
+  "browser_action": {
+    "default_title": "自动加载下一页",
+    //"default_icon": "icon_19.png",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "run_at": "document_end",
+      "matches": ["http://*/*", "https://*/*"],
+      "css": ["autopager.css"],
+      "js": ["jquery-3.1.1.min.js", "autopager.js"]
+    }
+  ]
+}
