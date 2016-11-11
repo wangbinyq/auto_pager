@@ -55,6 +55,11 @@ function bindevent() {
         }
 
         var href = $next.attr('href')
+        if(href === 'autopagerend://'
+            || href.indexOf('javascript://') === 0) {
+            return
+        }
+
         $loading = $('<div>').loading('start', pageNum++, href)
         $content.append($loading)
         
@@ -62,8 +67,8 @@ function bindevent() {
             var $newPage = $('<html>').html(res)
             var $newContent = $newPage.find(contentid)
             var $newNext = $newPage.find(nextid)
-
-            $next.attr('href', $newNext.attr('href'))
+            
+            $next.attr('href', $newNext.attr('href') || 'autopagerend://')
             $content.after($newContent)
             $content.attr('id', '')
         }).done(function() {

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>autopager options</title>
+    <script src="jquery-3.1.1.min.js"></script>
+    <script src="bootstrap.min.js"></script>
+    <script src="common.js"></script>
+    <script src="options.js"></script>
+    <link href="bootstrap.min.css" rel="stylesheet">
+    <script type="text/template" id="urlRuleLine">
+        <tr>
+            <td class="num"></td>
+            <td class="urltr">
+                <input type="text" class="form-control url">
+            </td>
+            <td class="content">
+                <input type="text" class="form-control contentid">
+            </td>
+            <td class="next">
+                <input type="text" class="form-control nextid">
+            </td>
+            <td class="action">
+            <label>启用 <input type="checkbox"/> </label>
+            <button class="btn btn-danger">删除</button>   
+            </td>
+        </tr>
+    </script>
+</head>
+<body>
+    <div class="container">
+        <table class="table">
+            <caption> URL 规则管理 <button class="save btn btn-primary">保存</button><button class="new btn btn-default">新增</button></caption>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>URL 正则</th>
+                    <th>内容选择器</th>
+                    <th>下一页选择器</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

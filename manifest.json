@@ -21,5 +21,6 @@
       "css": ["autopager.css"],
       "js": ["jquery-3.1.1.min.js", "autopager.js"]
     }
-  ]
+  ],
+  "options_page": "options.html"
 }

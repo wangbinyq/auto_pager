@@ -1,29 +1,6 @@
 $(function() {
 
-    function promisify(obj, fn) {
-
-        var ofun = obj[fn].bind(this)
-
-        obj[fn] = function(...args) {
-
-            var d = $.Deferred()
-
-            function cb(res) {
-                d.resolve(res)
-            }
-
-            ofun(...args, cb)
-
-            return d
-        }
-    }
-
     var storage = chrome.storage.sync, tab = null
-
-    promisify(storage, 'get')
-    promisify(storage, 'set')
-    promisify(storage, 'remove')
-    promisify(chrome.tabs, 'query')
 
     $('.ok').click(function(){
 
@@ -48,10 +25,14 @@ $(function() {
                     urls: item
                 })
             }
-        }).done(function() {
+        }).always(function() {
             chrome.tabs.reload()
             window.close()
         })
+    })
+
+    $('.options').click(function() {
+        return chrome.runtime.openOptionsPage()
     })
 
     function init() {
@@ -94,7 +75,7 @@ $(function() {
             })
         }).then(function() {
             return storage.remove(url)
-        }).done(init)
+        }).always(init)
     })
 
     init()    
