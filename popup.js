@@ -65,6 +65,9 @@ $(function() {
 
     $('.delete').click(function() {
         var url = $('.url input').val()
+        if(!url) {
+            return
+        }
         storage.get('urls').then(function(items) {
             var item = items['urls']
             item = $.grep(item, function(u) {
